@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: cloud-app
+spec:
+  containers:
+  - name: existing-container
+    image: existing-image  # Placeholder, replace with the actual image
+    volumeMounts:
+    - name: log-volume
+      mountPath: /var/log
+  - name: helper
+    image: busybox
+    command: ["/bin/sh", "-c", "tail -n+1 -f /var/log/cloud-app.log"]
+    volumeMounts:
+    - name: log-volume
+      mountPath: /var/log
+  volumes:
+  - name: log-volume
+    emptyDir: {}
