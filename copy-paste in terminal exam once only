@@ -1,0 +1,323 @@
+1. 
+
+kubectl apply -f - <<EOF
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: robotics-clusterrole
+rules:
+- apiGroups: ["apps"]
+  resources: ["deployments", "statefulsets", "daemonsets"]
+  verbs: ["create"]
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: robo-token
+  namespace: machine-team1
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: robotics-cb
+subjects:
+- kind: ServiceAccount
+  name: robo-token
+  namespace: machine-team1
+roleRef:
+  kind: ClusterRole
+  name: robotics-clusterrole
+  apiGroup: rbac.authorization.k8s.io
+EOF
+ 
+
+
+
+2. 
+
+
+
+ kubectl get nodes -l team=fixers
+ 
+ kubectl drain ip-172-31-19-158.us-east-2.compute.internal --ignore-daemonsets --delete-emptydir-data --force
+ 
+ kubectl delete pod cloud-app --namespace default
+ 
+ kubectl delete pod devflow --namespace default
+ 
+
+
+3. 
+
+
+
+
+kubectl create namespace ingress-deploy && kubectl apply -f - <<EOF
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hello-ingress
+  namespace: ingress-deploy
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /hello
+        pathType: Prefix
+        backend:
+          service:
+            name: hello
+            port:
+              number: 80
+EOF
+
+
+4. 
+
+
+cat <<EOF | kubectl apply -f -
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-fs
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: csi-hostpath-sc
+  resources:
+    requests:
+      storage: 10Mi
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: devops-server
+spec:
+  containers:
+    - name: nginx
+      image: nginx
+      volumeMounts:
+        - name: html-volume
+          mountPath: /usr/share/nginx/html
+  volumes:
+    - name: html-volume
+      persistentVolumeClaim:
+        claimName: pvc-fs
+EOF
+
+
+
+5. 
+
+kubectl apply -f - <<EOF
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-from-ns-port
+  namespace: dev1
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            purpose: production
+      ports:
+        - protocol: TCP
+          port: 9000
+EOF
+
+
+
+6. 
+
+
+kubectl apply -f - <<EOF
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  namespace: default
+  labels:
+    app: web
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: web
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+      - name: nginx
+        image: nginx
+        ports:
+        - containerPort: 80
+          name: http
+          protocol: TCP
+        imagePullPolicy: Always
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-svc
+spec:
+  type: NodePort
+  selector:
+    app: web
+  ports:
+  - name: http
+    port: 80
+    targetPort: http
+    protocol: TCP
+EOF
+
+
+
+7. 
+
+
+kubectl scale deployment cookie-app --replicas=3
+
+
+8.
+
+
+cat <<EOF > processor-pod.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: processor
+spec:
+  containers:
+  - name: nginx
+    image: nginx
+  nodeSelector:
+    gpu: "true"
+EOF
+kubectl apply -f processor-pod.yaml
+
+
+
+9.
+
+
+
+10. 
+
+kubectl apply -f - <<EOF
+apiVersion: v1
+kind: Pod
+metadata:
+  name: quantum
+spec:
+  containers:
+  - name: nginx
+    image: nginx
+  - name: redis
+    image: redis
+EOF
+
+
+  11.
+
+kubectl apply -f - <<EOF
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: crypto-data
+spec:
+  capacity:
+    storage: 2Gi
+  accessModes:
+    - ReadOnlyMany
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /srv/crypto-data
+    type: DirectoryOrCreate
+EOF
+
+
+12. 
+
+
+kubectl logs devflow | grep 'error' > /home/ec2-user/cka/logs-error
+
+
+
+
+13. 
+
+
+cat <<EOF > cloud-app-pod.yaml && kubectl delete pod cloud-app && sleep 8 && kubectl apply -f cloud-app-pod.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: cloud-app
+spec:
+  containers:
+  - name: existing-container
+    image: existing-image
+    volumeMounts:
+    - name: log-volume
+      mountPath: /var/log
+  - name: helper
+    image: busybox
+    command: ["/bin/sh", "-c", "tail -n+1 -f /var/log/cloud-app.log"]
+    volumeMounts:
+    - name: log-volume
+      mountPath: /var/log
+  volumes:
+  - name: log-volume
+    emptyDir: {}
+EOF
+
+
+14 . 
+
+kubectl top pod -l name=overloaded-cpu --sort-by=cpu | head -2 | tail -1 | awk '{print $1}' > /home/ec2-user/cka/overloaded-cpu-name.txt
+cat /home/ec2-user/cka/overloaded-cpu-name.txt
+
+15. 
+
+
+16. 
+
+sudo mkdir -p /var/lib/backups/
+
+
+export ETCDCTL_API=3
+
+sudo /usr/local/bin/etcdctl snapshot save /var/lib/backups/etcd-snapshot.db \
+  --endpoints=https://127.0.0.1:2379 \
+  --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+  --cert=/etc/kubernetes/pki/apiserver-etcd-client.crt \
+  --key=/etc/kubernetes/pki/apiserver-etcd-client.key
+
+17.
+
+
+
+
+
+
+
+
+
+
+
+
