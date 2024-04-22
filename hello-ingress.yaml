@@ -1,0 +1,16 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hello-ingress
+  namespace: ingress-deploy
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /hello
+        pathType: Prefix
+        backend:
+          service:
+            name: hello
+            port:
+              number: 80
