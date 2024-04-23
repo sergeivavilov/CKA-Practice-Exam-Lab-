@@ -1,3 +1,13 @@
+12. 
+
+
+
+kubectl logs devflow -f | grep "file-not-found" >> /home/ec2-user/cka/logs-12
+cat /home/ec2-user/cka/logs-12
+
+
+
+
 1.
 
 
@@ -217,13 +227,6 @@ spec:
     type: DirectoryOrCreate
 EOF
 
-
-12. 
-
-
-
-kubectl logs devflow -f | grep "file-not-found" >> /home/ec2-user/cka/logs-12
-cat /home/ec2-user/cka/logs-12
 
 
 
