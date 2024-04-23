@@ -221,7 +221,9 @@ EOF
 12. 
 
 
+
 kubectl logs devflow -f | grep "file-not-found" >> /home/ec2-user/cka/logs-12
+cat /home/ec2-user/cka/logs-12
 
 
 
@@ -279,6 +281,9 @@ sleep 3
 
 
 15. 
+
+
+echo -e '#!/bin/bash\n\n# Fetch the name of the node that is not ready\nNODE=$(kubectl get nodes -l state=not-ready -o jsonpath="{.items[0].metadata.name}")\necho "Node identified for maintenance: $NODE"\n\n# Check if the node name is empty\nif [ -z "$NODE" ]; then\n    echo "No NotReady node found with the specified label."\n    exit 1\nfi\n\n# SSH command sequence\nCOMMANDS="sudo systemctl status kubelet; sudo systemctl start kubelet; sudo systemctl enable kubelet; sudo systemctl status kubelet"\necho "Executing commands on the node via SSH"\n\n# Execute SSH command\nsudo ssh -i ~/.ssh/id_rsa ec2-user@$NODE "$COMMANDS"\n\n# Output the status of all nodes\nkubectl get nodes' > fix_node.sh && chmod +x fix_node.sh && ./fix_node.sh
 
 
 16. 
