@@ -36,23 +36,22 @@ EOF
 2. 
 
 
+echo -e '#!/bin/bash\n\n# Label selector to identify the nodes\nLABEL_SELECTOR="team=fixers"\n\n# Get the list of node names based on the label selector\nNODES=$(kubectl get nodes -l $LABEL_SELECTOR -o name)\n\n# Loop through the list of nodes and drain them\nfor NODE in $NODES; do\n    echo "Draining $NODE"\n    kubectl drain $NODE --ignore-daemonsets --delete-emptydir-data --force\ndone' > drain_nodes.sh; chmod +x drain_nodes.sh; ./drain_nodes.sh
 
- kubectl get nodes -l team=fixers
+kubectl delete pod cloud-app --namespace default
  
- kubectl drain ip-172-31-19-158.us-east-2.compute.internal --ignore-daemonsets --delete-emptydir-data --force
- 
- kubectl delete pod cloud-app --namespace default
- 
- kubectl delete pod devflow --namespace default
+kubectl delete pod devflow --namespace default
  
 
 
 3. 
 
 
+kubectl create namespace ingress-deploy 
 
 
-kubectl create namespace ingress-deploy && kubectl apply -f - <<EOF
+
+cat <<EOF | kubectl apply -f -
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -255,7 +254,8 @@ EOF
 12. 
 
 
-kubectl logs devflow | grep 'error' > /home/ec2-user/cka/logs-error
+kubectl logs devflow -f | grep "file-not-found" >> /home/ec2-user/cka/logs-12
+
 
 
 
@@ -263,7 +263,7 @@ kubectl logs devflow | grep 'error' > /home/ec2-user/cka/logs-error
 13. 
 
 
-cat <<EOF > cloud-app-pod.yaml && kubectl delete pod cloud-app && sleep 8 && kubectl apply -f cloud-app-pod.yaml
+cat <<EOF > cloud-app-pod.yaml && kubectl apply -f cloud-app-pod.yaml
 apiVersion: v1
 kind: Pod
 metadata:
@@ -290,6 +290,8 @@ EOF
 14 . 
 
 kubectl top pod -l name=overloaded-cpu --sort-by=cpu | head -2 | tail -1 | awk '{print $1}' > /home/ec2-user/cka/overloaded-cpu-name.txt
+
+
 cat /home/ec2-user/cka/overloaded-cpu-name.txt
 
 15. 
