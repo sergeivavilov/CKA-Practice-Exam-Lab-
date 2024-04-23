@@ -53,6 +53,50 @@ EOF
 
 
 
+2. 
+
+
+
+echo -e '#!/bin/bash\n\n# Label selector to identify the nodes\nLABEL_SELECTOR="team=fixers"\n\n# Get the list of node names based on the label selector\nNODES=$(kubectl get nodes -l $LABEL_SELECTOR -o name)\n\n# Loop through the list of nodes and drain them\nfor NODE in $NODES; do\n    echo "Draining $NODE"\n    kubectl drain $NODE --ignore-daemonsets --delete-emptydir-data --force\ndone' > drain_nodes.sh; chmod +x drain_nodes.sh; ./drain_nodes.sh
+
+
+
+
+
+3. 
+
+sleep 3
+
+kubectl create namespace ingress-deploy 
+
+sleep 3
+
+cat <<EOF | kubectl apply -f -
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hello-ingress
+  namespace: ingress-deploy
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /hello
+        pathType: Prefix
+        backend:
+          service:
+            name: hello
+            port:
+              number: 80
+EOF
+
+sleep 3
+
+
+
+
+
+
 4. 
 
 
@@ -318,35 +362,6 @@ sudo /usr/local/bin/etcdctl snapshot save /var/lib/backups/etcd-snapshot.db \
 
 
 
-
-3. 
-
-sleep 3
-
-kubectl create namespace ingress-deploy 
-
-sleep 3
-
-cat <<EOF | kubectl apply -f -
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: hello-ingress
-  namespace: ingress-deploy
-spec:
-  rules:
-  - http:
-      paths:
-      - path: /hello
-        pathType: Prefix
-        backend:
-          service:
-            name: hello
-            port:
-              number: 80
-EOF
-
-sleep 3
 
 
 
