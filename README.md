@@ -334,9 +334,9 @@ Monitor the logs of pod devflow and:
 ✑ Write them to /home/ec2-user/cka/logs-12
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-kubectl logs devflow -f | grep "file-not-found" >> /home/ec2-user/cka/logs-12
 
-cat /home/ec2-user/cka/logs-error
+kubectl logs devflow | grep "file-not-found" > /home/ec2-user/cka/logs-12
+cat /home/ec2-user/cka/logs-12
 
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -392,6 +392,27 @@ Task:
 A Kubernetes worker node, with label state=not-ready is in state NotReady. Investigate why this is the case, and perform any appropriate steps to bring the node to a Ready state, ensuring that any changes are made permanent.
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+kubectl get nodes -l state=not-ready
+sudo ssh -i ~/.ssh/id_rsa ec2-user@ip-172-31-17-189.us-east-2.compute.internal
+
+inside ssh yes 
+
+sudo systemctl status kubelet
+sudo systemctl start kubelet
+sudo systemctl enable kubelet
+sudo systemctl status kubelet
+
+exit
+
+
+kubectl get nodes
+
+
+
+OR 
+
+
+echo -e '#!/bin/bash\n\n# Fetch the name of the node that is not ready\nNODE=$(kubectl get nodes -l state=not-ready -o jsonpath="{.items[0].metadata.name}")\necho "Node identified for maintenance: $NODE"\n\n# Check if the node name is empty\nif [ -z "$NODE" ]; then\n    echo "No NotReady node found with the specified label."\n    exit 1\nfi\n\n# SSH command sequence\nCOMMANDS="sudo systemctl status kubelet; sudo systemctl start kubelet; sudo systemctl enable kubelet; sudo systemctl status kubelet"\necho "Executing commands on the node via SSH"\n\n# Execute SSH command\nsudo ssh -i ~/.ssh/id_rsa ec2-user@$NODE "$COMMANDS"\n\n# Output the status of all nodes\nkubectl get nodes' > fix_node.sh && chmod +x fix_node.sh && ./fix_node.sh
 
 
 
