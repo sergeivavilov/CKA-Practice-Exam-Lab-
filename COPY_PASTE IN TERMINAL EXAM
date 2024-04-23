@@ -181,6 +181,8 @@ kubectl apply -f processor-pod.yaml
 
 10. 
 
+sleep 3
+
 kubectl apply -f - <<EOF
 apiVersion: v1
 kind: Pod
@@ -194,6 +196,8 @@ spec:
     image: redis
 EOF
 
+
+sleep 3
 
   11.
 
@@ -225,8 +229,9 @@ kubectl logs devflow -f | grep "file-not-found" >> /home/ec2-user/cka/logs-12
 
 13. 
 
+sleep 3
 
-cat <<EOF > cloud-app-pod.yaml && kubectl apply -f cloud-app-pod.yaml
+cat <<EOF > cloud-app-pod.yaml
 apiVersion: v1
 kind: Pod
 metadata:
@@ -249,13 +254,29 @@ spec:
     emptyDir: {}
 EOF
 
+kubectl apply -f cloud-app-pod.yaml
 
-14 . 
+sleep 3
+
+
+14. 
+
+sleep 3
+
+
 
 kubectl top pod -l name=overloaded-cpu --sort-by=cpu | head -2 | tail -1 | awk '{print $1}' > /home/ec2-user/cka/overloaded-cpu-name.txt
 
+sleep 1
+
 
 cat /home/ec2-user/cka/overloaded-cpu-name.txt
+
+
+
+sleep 3
+
+
 
 15. 
 
