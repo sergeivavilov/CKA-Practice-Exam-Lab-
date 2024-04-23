@@ -17,20 +17,6 @@ sleep 3
 
 
 
-
-
-12. 
-
-
-kubectl logs devflow | grep "file-not-found" > /home/ec2-user/cka/logs-12
-cat /home/ec2-user/cka/logs-12
-
-sleep 3
-
-
-
-
-
 1.
 
 
@@ -250,6 +236,8 @@ spec:
     type: DirectoryOrCreate
 EOF
 
+sleep 5 
+
 
 12. 
 
@@ -321,14 +309,6 @@ sudo /usr/local/bin/etcdctl snapshot save /var/lib/backups/etcd-snapshot.db \
 17.
 
 
-12. 
-
-
-kubectl logs devflow | grep "file-not-found" > /home/ec2-user/cka/logs-12
-cat /home/ec2-user/cka/logs-12
-
-sleep 3
-
 
 
 3. 
@@ -362,24 +342,9 @@ sleep 3
 
 
 
-2. 
 
 
-echo -e '#!/bin/bash\n\n# Label selector to identify the nodes\nLABEL_SELECTOR="team=fixers"\n\n# Get the list of node names based on the label selector\nNODES=$(kubectl get nodes -l $LABEL_SELECTOR -o name)\n\n# Loop through the list of nodes and drain them\nfor NODE in $NODES; do\n    echo "Draining $NODE"\n    kubectl drain $NODE --ignore-daemonsets --delete-emptydir-data --force\ndone' > drain_nodes.sh; chmod +x drain_nodes.sh; ./drain_nodes.sh
 
-kubectl delete pod cloud-app --namespace default
- 
-kubectl delete pod devflow --namespace default
- 
-
-
-12. 
-
-
-kubectl logs devflow | grep "file-not-found" > /home/ec2-user/cka/logs-12
-cat /home/ec2-user/cka/logs-12
-
-sleep 3
 
 
 
