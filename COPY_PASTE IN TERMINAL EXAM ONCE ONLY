@@ -1,4 +1,5 @@
-1. 
+1.
+
 
 kubectl apply -f - <<EOF
 apiVersion: rbac.authorization.k8s.io/v1
