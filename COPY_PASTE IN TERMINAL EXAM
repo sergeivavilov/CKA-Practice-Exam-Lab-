@@ -281,16 +281,24 @@ kubectl apply -f cloud-app-pod.yaml
 sleep 3
 
 
+14. 
+
+sleep 3
 
 
 
-15. 
+kubectl top pod -l name=overloaded-cpu --sort-by=cpu | head -2 | tail -1 | awk '{print $1}' > /home/ec2-user/cka/overloaded-cpu-name.txt
+
+sleep 1
 
 
-echo -e '#!/bin/bash\n\n# Fetch the name of the node that is not ready\nNODE=$(kubectl get nodes -l state=not-ready -o jsonpath="{.items[0].metadata.name}")\necho "Node identified for maintenance: $NODE"\n\n# Check if the node name is empty\nif [ -z "$NODE" ]; then\n    echo "No NotReady node found with the specified label."\n    exit 1\nfi\n\n# SSH command sequence\nCOMMANDS="sudo systemctl status kubelet; sudo systemctl start kubelet; sudo systemctl enable kubelet; sudo systemctl status kubelet"\necho "Executing commands on the node via SSH"\n\n# Execute SSH command\nsudo ssh -i ~/.ssh/id_rsa ec2-user@$NODE "$COMMANDS"\n\n# Output the status of all nodes\nkubectl get nodes' > fix_node.sh && chmod +x fix_node.sh && ./fix_node.sh
+cat /home/ec2-user/cka/overloaded-cpu-name.txt
 
 
-sleep 5
+
+sleep 3
+
+
 
 
 16. 
@@ -342,6 +350,15 @@ sleep 3
 
 
 
+
+
+15. 
+
+
+echo -e '#!/bin/bash\n\n# Fetch the name of the node that is not ready\nNODE=$(kubectl get nodes -l state=not-ready -o jsonpath="{.items[0].metadata.name}")\necho "Node identified for maintenance: $NODE"\n\n# Check if the node name is empty\nif [ -z "$NODE" ]; then\n    echo "No NotReady node found with the specified label."\n    exit 1\nfi\n\n# SSH command sequence\nCOMMANDS="sudo systemctl status kubelet; sudo systemctl start kubelet; sudo systemctl enable kubelet; sudo systemctl status kubelet"\necho "Executing commands on the node via SSH"\n\n# Execute SSH command\nsudo ssh -i ~/.ssh/id_rsa ec2-user@$NODE "$COMMANDS"\n\n# Output the status of all nodes\nkubectl get nodes' > fix_node.sh && chmod +x fix_node.sh && ./fix_node.sh
+
+
+sleep 5
 
 
 
