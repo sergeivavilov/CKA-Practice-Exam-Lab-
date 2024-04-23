@@ -71,15 +71,24 @@ Set the node with label team=fixers as unavailable and reschedule all the pods r
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
- kubectl get nodes -l team=fixers
+kubectl get nodes -l team=fixers
  
- kubectl drain ip-172-31-19-158.us-east-2.compute.internal --ignore-daemonsets --delete-emptydir-data --force
+kubectl drain ip-172-31-19-158.us-east-2.compute.internal --ignore-daemonsets --delete-emptydir-data --force
+
+!!!!!or use script !!! : 
+
+echo -e '#!/bin/bash\n\n# Label selector to identify the nodes\nLABEL_SELECTOR="team=fixers"\n\n# Get the list of node names based on the label selector\nNODES=$(kubectl get nodes -l $LABEL_SELECTOR -o name)\n\n# Loop through the list of nodes and drain them\nfor NODE in $NODES; do\n    echo "Draining $NODE"\n    kubectl drain $NODE --ignore-daemonsets --delete-emptydir-data --force\ndone' > drain_nodes.sh; chmod +x drain_nodes.sh; ./drain_nodes.sh
+
+
+
+
+
  
- kubectl delete pod cloud-app --namespace default
+kubectl delete pod cloud-app --namespace default
  
- kubectl delete pod devflow --namespace default
+kubectl delete pod devflow --namespace default
  
- kubectl get pods --all-namespaces -o wide
+kubectl get pods --all-namespaces -o wide
 
 kubectl get nodes
 kubectl get pods --all-namespaces -o wide
@@ -113,6 +122,7 @@ Create a new nginx Ingress resource as follows:
 
 kubectl create namespace ingress-deploy
 
+vi hello-ingress.yaml
 
 kubectl apply -f hello-ingress.yaml
 
@@ -324,7 +334,8 @@ Monitor the logs of pod devflow and:
 ✑ Write them to /home/ec2-user/cka/logs-12
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-kubectl logs devflow | grep 'error' > /home/ec2-user/cka/logs-error
+kubectl logs devflow -f | grep "file-not-found" >> /home/ec2-user/cka/logs-12
+
 cat /home/ec2-user/cka/logs-error
 
 
@@ -355,7 +366,7 @@ You can delete and recreate the pod if it gives error when updating.
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 vi cloud-app-pod.yaml
-kubectl delete pod cloud-app
+
 kubectl apply -f cloud-app-pod.yaml
 kubectl get pods
 kubectl logs cloud-app -c helper
